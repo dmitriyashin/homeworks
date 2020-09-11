@@ -1,50 +1,48 @@
 #include "TXLib.h"
-void drawSphere(int X, int Y, int R, int r, int g, int b)
-{
-    int N = 100;
-    int x = X ;
-    int y = Y ;
 
-    for(int i = 0; i < N;  i++)
+void drawSphere(int x_centerofSphere, int y_centerofSphere, int radius, int red, int green, int blue)
+{
+    int numberofCircles = 100;
+    int x_centerofCircles = x_centerofSphere ;
+    int y_centerofCircles = y_centerofSphere ;
+
+    for(int i = 0; i < numberofCircles;  i++)
     {
-        txSetFillColor(RGB(i * r / N, i * g / N, i * b / N));
-        txSetColor(RGB(i * r / N, i * g / N, i * b / N));
-        txCircle(X + (X - x) * i / N, Y + (Y - y) * i / N, R - i * R / N);
+        txSetFillColor(RGB(i * red / numberofCircles, i * green / numberofCircles, i * blue / numberofCircles));
+        txSetColor(RGB(i * red / numberofCircles, i * green / numberofCircles, i * blue / numberofCircles));
+        txCircle(x_centerofSphere + (x_centerofSphere - x_centerofCircles) * i / numberofCircles, y_centerofSphere + (y_centerofSphere - y_centerofCircles) * i / numberofCircles, radius - i * radius / numberofCircles);
     }
 }
 int main()
 {
-
     txCreateWindow(800,600);
 
     int dx = 3 ;
     int dy = 3 ;
-    int X = 200;
-    int Y = 200;
-    int R = 100;
-    int r = 255;
-    int g = 255;
-    int b = 0;
-
-
+    int x_centerofSphere = 200;
+    int y_centerofSphere = 200;
+    int radius = 100;
+    int red = 255;
+    int green = 255;
+    int blue = 0;
 
     while(true)
     {
-        if ( (X + R >= 800) or (X - R <= 0) )
+        if ( (x_centerofSphere + radius >= 800) or (x_centerofSphere - radius <= 0) )
         {
             dx = -dx;
         }
-        if ( (Y + R >= 600) or (Y - R <= 0) )
+        if ( (y_centerofSphere + radius >= 600) or (y_centerofSphere - radius <= 0) )
         {
             dy = -dy;
         }
-        X = X + dx;
-        Y = Y + dy;
+
+        x_centerofSphere = x_centerofSphere + dx;
+        y_centerofSphere = y_centerofSphere + dy;
         txBegin();
         txSetFillColor (TX_BLACK);
         txClear();
-
-        drawSphere(X, Y, R, r, g, b);
+        drawSphere(x_centerofSphere, y_centerofSphere, radius, red, green, blue);
         txEnd();
     }
 
