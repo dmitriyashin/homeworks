@@ -13,98 +13,92 @@ void drawSphere(float x_centerofSphere, float y_centerofSphere, int radius, int 
         txSetFillColor(RGB(i * red / numberofCircles, i * green / numberofCircles, i * blue / numberofCircles));
         txSetColor(RGB(i * red / numberofCircles, i * green / numberofCircles, i * blue / numberofCircles));
         txCircle(x_centerofSphere + (x_centerofSphere - x_centerofCircles) * i / numberofCircles, y_centerofSphere + (y_centerofSphere - y_centerofCircles) * i / numberofCircles, radius - i * radius / numberofCircles);
+        txGetColor( );
     }
 }
 
-void moveSphere(float* x_centerofSphere, float* y_centerofSphere, float dx, float dy)
+void moveSphere(float* x_centerofSphere, float* y_centerofSphere, float vx, float vy, int t)
 {
-    *x_centerofSphere = *x_centerofSphere + dx;
-    *y_centerofSphere = *y_centerofSphere + dy;
+    *x_centerofSphere = *x_centerofSphere + vx * t;
+    *y_centerofSphere = *y_centerofSphere + vy * t;
 }
 
-void colideSphere(float x_centerofSphere, float y_centerofSphere, int radius, float* dx, float* dy)
+void colideSphere(float x_centerofSphere, float y_centerofSphere, int radius, float* vx, float* vy)
 {
     if  (x_centerofSphere + radius > 800)
     {
-        *dx = -abs(*dx);
+        *vx = -abs(*vx);
     }
 
     if(x_centerofSphere - radius < 0)
     {
-        *dx = abs(*dx);
+        *vx = abs(*vx);
     }
     if  (y_centerofSphere + radius > 600)
     {
-        *dy = -abs(*dy);
+        *vy = -abs(*vy);
     }
     if (y_centerofSphere - radius < 0)
     {
-        *dy = abs(*dy);
+        *vy = abs(*vy);
     }
 }
 
 bool checkCollisionTwoSphers(float x1, float y1, float x2, float y2, int r1, int r2)
 {
-    if ((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1) < (r1 + r2)  * (r1 + r2))
+    return ((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1) < (r1 + r2) * (r1 + r2));
+}
+
+void collideTwoSphers( float* vx1, float* vx2, float* vy1, float* vy2, int m1, int m2)
+{
+    float dv1 = *vx1;
+    float du1 = *vy1;
+    float dv2 = *vx2;
+    float du2 = *vy2;
+    *vx1 = (2 * m2 * dv2 + (m1 - m2) * dv1) / (m1 + m2);
+    *vy1 = (2 * m2 * du2 + (m1 - m2) * du1) / (m1 + m2);
+    *vx2 = (2 * m1 * dv1 + (m2 - m1) * dv2) / (m1 + m2);
+    *vy2 = (2 * m1 * du1 + (m2 - m1) * du2) / (m1 + m2);
+}
+
+void movetocursor(float x_centerofSphere, float y_centerofSphere,float x_cursor, float y_cursor, float* vx, float* vy, float vx_const, float vy_const, int t)
+{
+    if  ((x_centerofSphere == x_cursor) and (y_centerofSphere == y_cursor))
     {
-        return(true);
+        *vx = 0;
+        *vy = 0;
     }
     else
     {
-        return(false);
+        float l = sqrt((y_cursor - y_centerofSphere) * (y_cursor - y_centerofSphere) + (x_cursor - x_centerofSphere) * (x_cursor - x_centerofSphere));
+        float sin = (y_cursor - y_centerofSphere) / l;
+        float cos = (x_cursor - x_centerofSphere) / l;
+        float v = (sqrt(vx_const * vx_const + vy_const * vy_const)) / t;
+        *vx = cos * v;
+        *vy = sin * v;
     }
 }
 
-void collideTwoSphers( float* dx1, float* dx2, float* dy1, float* dy2, int m1, int m2)
+void accelerationofSphere(float* vx_const, float* vy_const, float ax, float ay, int t)
 {
-    float dv1 = *dx1;
-    float du1 = *dy1;
-    float dv2 = *dx2;
-    float du2 = *dy2;
-    *dx1 = (2 * m2 * dv2 + (m1 - m2) * dv1) / (m1 + m2);
-    *dy1 = (2 * m2 * du2 + (m1 - m2) * du1) / (m1 + m2);
-    *dx2 = (2 * m1 * dv1 + (m2 - m1) * dv2) / (m1 + m2);
-    *dy2 = (2 * m1 * du1 + (m2 - m1) * du2) / (m1 + m2);
-}
-
-void movetopoint(float x_centerofSphere, float y_centerofSphere,float x_point, float y_point, float* dx, float* dy, float dx_const, float dy_const)
-{
-    if  ((x_centerofSphere == x_point) and (y_centerofSphere == y_point))
-    {
-        *dx = 0;
-        *dy = 0;
-    }
-    else
-    {
-        float l = sqrt((y_point - y_centerofSphere) * (y_point - y_centerofSphere) + (x_point - x_centerofSphere) * (x_point - x_centerofSphere));
-        float sin = (y_point - y_centerofSphere) / l;
-        float cos = (x_point - x_centerofSphere) / l;
-        float v = sqrt(dx_const * dx_const + dy_const * dy_const);
-        *dx = cos * v;
-        *dy = sin * v;
-    }
-}
-
-void accelerationofSphere(float* dx_const, float* dy_const, float dx_acceleration, float dy_acceleration)
-{
-    *dx_const = *dx_const + dx_acceleration;
-    *dy_const = *dy_const + dy_acceleration;
+    *vx_const = *vx_const + ax * t;
+    *vx_const = *vy_const + ay * t;
 }
 
 int main()
 {
     txCreateWindow(800,600);
 
-    int dx1_const = 5;
-    int dy1_const = 5;
-    float dx2_const = 1;
-    float dy2_const = 1;
-    float dx3_const = 1;
-    float dy3_const = 1;
-    float dx2_acceleration = 0.001;
-    float dy2_acceleration = 0.001;
-    float dx3_acceleration = 0.001;
-    float dy3_acceleration = 0.001;
+    int vx1_const = 5;
+    int vy1_const = 5;
+    float vx2_const = 1;
+    float vy2_const = 1;
+    float vx3_const = 1;
+    float vy3_const = 1;
+    float ax2 = 0.001;
+    float ay2 = 0.001;
+    float ax3 = 0.001;
+    float ay3 = 0.001;
     float x_centerofSphere1 = 100;
     float y_centerofSphere1 = 100;
     float x_centerofSphere2 = 500;
@@ -126,43 +120,42 @@ int main()
     int m1 = 1;
     int m2 = 1;
     int m3 = 1;
-    float dx1 = dx1_const;
-    float dy1 = dy1_const;
-    float dx2 = dx2_const;
-    float dy2 = dy2_const;
-    float dx3 = dx3_const;
-    float dy3 = dy3_const;
-    float x_point = 0;
-    float y_point = 0;
+    float vx1 = vx1_const;
+    float vy1 = vy1_const;
+    float vx2 = vx2_const;
+    float vy2 = vy2_const;
+    float vx3 = vx3_const;
+    float vy3 = vy3_const;
+    float x_cursor = 0;
+    float y_cursor = 0;
+    int t = 1;
 
     while(true)
     {
         POINT positionofCursor;
         GetCursorPos(&positionofCursor);
-        x_point = positionofCursor.x - 367;
-        y_point = positionofCursor.y - 161;
+        x_cursor = positionofCursor.x - 367;
+        y_cursor = positionofCursor.y - 161;
 
-        movetopoint(x_centerofSphere1, y_centerofSphere1, x_point, y_point, &dx1, &dy1, dx1_const, dy1_const);
-        movetopoint(x_centerofSphere2, y_centerofSphere2, x_point, y_point, &dx2, &dy2, dx2_const, dy2_const);
-        movetopoint(x_centerofSphere3, y_centerofSphere3, x_point, y_point, &dx3, &dy3, dx3_const, dy3_const);
+        movetocursor(x_centerofSphere1, y_centerofSphere1, x_cursor, y_cursor, &vx1, &vy1, vx1_const, vy1_const, t);
+        movetocursor(x_centerofSphere2, y_centerofSphere2, x_cursor, y_cursor, &vx2, &vy2, vx2_const, vy2_const, t);
+        movetocursor(x_centerofSphere3, y_centerofSphere3, x_cursor, y_cursor, &vx3, &vy3, vx3_const, vy3_const, t);
 
-        colideSphere(x_centerofSphere1, y_centerofSphere1, radius1, &dx1, &dy1);
-        colideSphere(x_centerofSphere2, y_centerofSphere2, radius2, &dx2, &dy2);
-        colideSphere(x_centerofSphere3, y_centerofSphere3, radius3, &dx3, &dy3);
+        colideSphere(x_centerofSphere1, y_centerofSphere1, radius1, &vx1, &vy1);
+        colideSphere(x_centerofSphere2, y_centerofSphere2, radius2, &vx2, &vy2);
+        colideSphere(x_centerofSphere3, y_centerofSphere3, radius3, &vx3, &vy3);
 
         if (checkCollisionTwoSphers(x_centerofSphere2, y_centerofSphere2, x_centerofSphere3, y_centerofSphere3, radius2, radius3))
         {
-            collideTwoSphers( &dx2, &dx3, &dy2, &dy3, m2, m3);
+            collideTwoSphers( &vx2, &vx3, &vy2, &vy3, m2, m3);
         }
 
-        moveSphere(&x_centerofSphere1, &y_centerofSphere1, dx1, dy1);
-        moveSphere(&x_centerofSphere2, &y_centerofSphere2, dx2, dy2);
-        moveSphere(&x_centerofSphere3, &y_centerofSphere3, dx3, dy3);
+        moveSphere(&x_centerofSphere1, &y_centerofSphere1, vx1, vy1, t);
+        moveSphere(&x_centerofSphere2, &y_centerofSphere2, vx2, vy2, t);
+        moveSphere(&x_centerofSphere3, &y_centerofSphere3, vx3, vy3, t);
 
-        accelerationofSphere(&dx2_const, &dy2_const, dx2_acceleration, dy2_acceleration);
-        accelerationofSphere(&dx3_const, &dy3_const, dx3_acceleration, dy3_acceleration);
-
-
+        accelerationofSphere(&vx2_const, &vy2_const, ax2, ay2, t);
+        accelerationofSphere(&vx3_const, &vy3_const, ax3, ay3, t);
 
         if (checkCollisionTwoSphers(x_centerofSphere1, y_centerofSphere1, x_centerofSphere3, y_centerofSphere3, radius1, radius3))
             {
