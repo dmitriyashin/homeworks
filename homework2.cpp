@@ -3,14 +3,12 @@
 
 struct Sphere
 {
-    float x_centerofSphere;
-    float y_centerofSphere;
-    float vx_const;
-    float vy_const;
-    float vx;
-    float vy;
-    float ax;
-    float ay;
+    float centerX;
+    float centerY;
+    float vX;
+    float vY;
+    float accelerationX;
+    float accelerationY;
     int radius;
     int red;
     int green;
@@ -18,100 +16,102 @@ struct Sphere
     int m;
 };
 
-void drawSphere(Sphere sphere, sf::RenderWindow* window)
+void drawSphere(sf::RenderWindow* window, Sphere sphere)
 {
     int numberofCircles = 100;
-    float x_centerofCircles = sphere.x_centerofSphere;
-    float y_centerofCircles = sphere.y_centerofSphere;
+    float x_centerofCircles = sphere.centerX;
+    float y_centerofCircles = sphere.centerY;
 
     for (int i = 0; i < numberofCircles; i++)
     {
         sf::CircleShape circle(sphere.radius - i * sphere.radius / numberofCircles, 100);
         circle.setFillColor(sf::Color(i * sphere.red / numberofCircles, i * sphere.green / numberofCircles, i * sphere.blue / numberofCircles));
-        circle.setPosition(sphere.x_centerofSphere + (sphere.x_centerofSphere - x_centerofCircles) * i / numberofCircles  - sphere.radius + sphere.radius*i/ numberofCircles, sphere.y_centerofSphere + (sphere.y_centerofSphere - y_centerofCircles) * i / numberofCircles - sphere.radius + sphere.radius * i / numberofCircles);
-        (*window).draw(circle);
+        circle.setPosition(sphere.centerX + (sphere.centerX - x_centerofCircles) * i / numberofCircles  - sphere.radius + sphere.radius*i/ numberofCircles, sphere.centerY + (sphere.centerY - y_centerofCircles) * i / numberofCircles - sphere.radius + sphere.radius * i / numberofCircles);
+        window->draw(circle);
     }
 }
 
 void moveSphere(Sphere* sphere, int t)
 {
-    sphere->x_centerofSphere = sphere->x_centerofSphere + sphere->vx * t;
-    sphere->y_centerofSphere = sphere->y_centerofSphere + sphere->vy * t;
+    sphere->centerX = sphere->centerX + sphere->vX * t;
+    sphere->centerY = sphere->centerY + sphere->vY * t;
 }
 
-void colideSphere(Sphere* sphere)
+void colideSphereWall(Sphere* sphere, int windowX, int windowY)
 {
-    if (sphere->x_centerofSphere + sphere->radius > 800)
+    if (sphere->centerX + sphere->radius > windowX)
     {
-        sphere->vx = -abs(sphere->vx);
+        sphere->vX = -abs(sphere->vX);
     }
 
-    if (sphere->x_centerofSphere - sphere->radius < 0)
+    if (sphere->centerX - sphere->radius < 0)
     {
-        sphere->vx = abs(sphere->vx);
+        sphere->vX = abs(sphere->vX);
     }
-    if (sphere->y_centerofSphere + sphere->radius > 600)
+    if (sphere->centerY + sphere->radius > windowY)
     {
-        sphere->vy = -abs(sphere->vy);
+        sphere->vY = -abs(sphere->vY);
     }
-    if (sphere->y_centerofSphere - sphere->radius < 0)
+    if (sphere->centerY - sphere->radius < 0)
     {
-        sphere->vy = abs(sphere->vy);
+        sphere->vY = abs(sphere->vY);
     }
 }
 
-bool checkCollisionTwoSphers(Sphere* sphere1, Sphere* sphere2)
+bool checkCollisionTwoSphers(Sphere sphere1, Sphere sphere2)
 {
-    return (pow(sphere2->x_centerofSphere - sphere1->x_centerofSphere, 2) + pow(sphere2->y_centerofSphere - sphere1->y_centerofSphere, 2) < pow(sphere1->radius + sphere2->radius, 2));
+    return (pow(sphere2.centerX - sphere1.centerX, 2) + pow(sphere2.centerY - sphere1.centerY, 2) < pow(sphere1.radius + sphere2.radius, 2));
 }
 
 void collideTwoSphers(Sphere* sphere1, Sphere* sphere2)
 {
-    float dv1 = sphere1->vx;
-    float du1 = sphere1->vy;
-    float dv2 = sphere2->vx;
-    float du2 = sphere2->vy;
-    sphere1->vx = (2 * sphere2->m * dv2 + (sphere1->m - sphere2->m) * dv1) / (sphere1->m + sphere2->m);
-    sphere1->vy = (2 * sphere2->m * du2 + (sphere1->m - sphere2->m) * du1) / (sphere1->m + sphere2->m);
-    sphere2->vx = (2 * sphere1->m * dv1 + (sphere2->m - sphere1->m) * dv2) / (sphere1->m + sphere2->m);
-    sphere2->vy = (2 * sphere1->m * du1 + (sphere2->m - sphere1->m) * du2) / (sphere1->m + sphere2->m);
+    float dv1 = sphere1->vX;
+    float du1 = sphere1->vY;
+    float dv2 = sphere2->vX;
+    float du2 = sphere2->vY;
+    sphere1->vX = (2 * sphere2->m * dv2 + (sphere1->m - sphere2->m) * dv1) / (sphere1->m + sphere2->m);
+    sphere1->vY = (2 * sphere2->m * du2 + (sphere1->m - sphere2->m) * du1) / (sphere1->m + sphere2->m);
+    sphere2->vX = (2 * sphere1->m * dv1 + (sphere2->m - sphere1->m) * dv2) / (sphere1->m + sphere2->m);
+    sphere2->vY = (2 * sphere1->m * du1 + (sphere2->m - sphere1->m) * du2) / (sphere1->m + sphere2->m);
 }
 
 void movetocursor(Sphere* sphere, float x_cursor, float y_cursor, int t)
 {
-    if ((sphere->x_centerofSphere == x_cursor) and (sphere->y_centerofSphere == y_cursor))
+    if ((sphere->centerX == x_cursor) and (sphere->centerY == y_cursor))
     {
-        sphere->vx = 0;
-        sphere->vy = 0;
+        sphere->vX = 0;
+        sphere->vY = 0;
     }
     else
     {
-        float l = sqrt((y_cursor - sphere->y_centerofSphere) * (y_cursor - sphere->y_centerofSphere) + (x_cursor - sphere->x_centerofSphere) * (x_cursor - sphere->x_centerofSphere));
-        float sin = (y_cursor - sphere->y_centerofSphere) / l;
-        float cos = (x_cursor - sphere->x_centerofSphere) / l;
-        float v = (sqrt(sphere->vx_const * sphere->vx_const + sphere->vy_const * sphere->vy_const)) / t;
-        sphere->vx = cos * v;
-        sphere->vy = sin * v;
+        float l = sqrt((y_cursor - sphere->centerY) * (y_cursor - sphere->centerY) + (x_cursor - sphere->centerX) * (x_cursor - sphere->centerX));
+        float sin = (y_cursor - sphere->centerY) / l;
+        float cos = (x_cursor - sphere->centerX) / l;
+        float v = (sqrt(sphere->vX * sphere->vX + sphere->vY * sphere->vY)) / t;
+        sphere->vX = cos * v;
+        sphere->vY = sin * v;
     }
 }
 
-void accelerationofSphere(Sphere* sphere, int t)
+void changeV(Sphere* sphere, int t)
 {
-    sphere->vx_const = sphere->vx_const + sphere->ax * t;
-    sphere->vx_const = sphere->vy_const + sphere->ay * t;
+    sphere->vX = sphere->vX + sphere->accelerationX * t;
+    sphere->vY = sphere->vY + sphere->accelerationY * t;
 }
 
 int main()
 {
-    sf::RenderWindow window(sf::VideoMode(800, 600), "Window");
-
-    Sphere sphere1 = { 100, 100, 5, 5, 5, 5, 0, 0, 50, 255, 255, 0, 1 };
-    Sphere sphere2 = { 300, 300, 3, 3, 3, 3, 0.001, 0.001, 50, 255, 0, 0, 1 };
-    Sphere sphere3 = { 500, 500, 1, 1, 1, 1, 0.001, 0.001, 50, 0, 255, 0, 1 };
+    Sphere sphere1 = { 100, 100, 5, 5,  0, 0, 50, 255, 255, 0, 1 };
+    Sphere sphere2 = { 300, 300, 3, 3,  0.001, 0.001, 50, 255, 0, 0, 1 };
+    Sphere sphere3 = { 500, 500, 1, 1, 0.001, 0.001, 50, 0, 255, 0, 1 };
 
     float x_cursor = 0;
     float y_cursor = 0;
     int t = 1;
+    int windowX = 800;
+    int windowY = 600;
+    
+    sf::RenderWindow window(sf::VideoMode(windowX, windowY), "Window");
 
     while (window.isOpen())
     {
@@ -132,18 +132,16 @@ int main()
             }
         }
 
-        accelerationofSphere(&sphere2, t);
-        accelerationofSphere(&sphere3, t);
-
-        
+        changeV(&sphere2, t);
+        changeV(&sphere3, t);
 
         movetocursor(&sphere1, x_cursor, y_cursor, t);
 
-        colideSphere(&sphere1);
-        colideSphere(&sphere2);
-        colideSphere(&sphere3);
+        colideSphereWall(&sphere1, windowX, windowY);
+        colideSphereWall(&sphere2, windowX, windowY);
+        colideSphereWall(&sphere3, windowX, windowY);
 
-        if (checkCollisionTwoSphers(&sphere2, &sphere3))
+        if (checkCollisionTwoSphers(sphere2, sphere3))
         {
             collideTwoSphers(&sphere2, &sphere3);
         }
@@ -152,20 +150,20 @@ int main()
         moveSphere(&sphere2, t);
         moveSphere(&sphere3, t);
 
-        if (checkCollisionTwoSphers(&sphere1, &sphere2))
+        if (checkCollisionTwoSphers(sphere1, sphere2))
         {
             break;
         }
 
-        if (checkCollisionTwoSphers(&sphere1, &sphere3))
+        if (checkCollisionTwoSphers(sphere1, sphere3))
         {
             break;
         }
 
         window.clear();
-        drawSphere(sphere1, &window);
-        drawSphere(sphere2, &window);
-        drawSphere(sphere3, &window);
+        drawSphere(&window, sphere1);
+        drawSphere(&window, sphere2);
+        drawSphere(&window, sphere3);
         window.display();
     }
 
