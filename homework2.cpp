@@ -24,10 +24,11 @@ void drawSphere(sf::RenderWindow* window, Sphere sphere)
     int numberofCircles = 100;
     float x_centerofCircles = sphere.position.x;
     float y_centerofCircles = sphere.position.y;
+    sf::CircleShape circle(0, 100);
 
     for (int i = 0; i < numberofCircles; i++)
     {
-        sf::CircleShape circle(sphere.radius - i * sphere.radius / numberofCircles, 100);
+        circle.setRadius(sphere.radius - i * sphere.radius / numberofCircles);
         circle.setFillColor(sf::Color(i * sphere.red / numberofCircles, i * sphere.green / numberofCircles, i * sphere.blue / numberofCircles));
         circle.setPosition(sphere.position.x + (sphere.position.x - x_centerofCircles) * i / numberofCircles  - sphere.radius + sphere.radius*i/ numberofCircles, sphere.position.y + (sphere.position.y - y_centerofCircles) * i / numberofCircles - sphere.radius + sphere.radius * i / numberofCircles);
         window->draw(circle);
@@ -78,7 +79,7 @@ void collideTwoSphers(Sphere* sphere1, Sphere* sphere2)
     sphere2->velocity.y = (2 * sphere1->m * du1 + (sphere2->m - sphere1->m) * du2) / (sphere1->m + sphere2->m);
 }
 
-void movetocursor(Sphere* sphere, float x_cursor, float y_cursor, int t)
+void moveToCursor(Sphere* sphere, float x_cursor, float y_cursor, int t)
 {
     if ((sphere->position.x == x_cursor) and (sphere->position.y == y_cursor))
     {
@@ -96,7 +97,7 @@ void movetocursor(Sphere* sphere, float x_cursor, float y_cursor, int t)
     }
 }
 
-void changeV(Sphere* sphere, int t)
+void changeVelocity(Sphere* sphere, int t)
 {
     sphere->velocity.x = sphere->velocity.x + sphere->acceleration.x * t;
     sphere->velocity.y = sphere->velocity.y + sphere->acceleration.y * t;
@@ -111,8 +112,8 @@ int main()
     float x_cursor = 0;
     float y_cursor = 0;
     int t = 1;
-    int windowX = 800;
-    int windowY = 600;
+    int windowX = 1200;
+    int windowY = 1000;
     
     sf::RenderWindow window(sf::VideoMode(windowX, windowY), "Window");
 
@@ -132,10 +133,10 @@ int main()
                 }
         }
 
-        changeV(&sphere2, t);
-        changeV(&sphere3, t);
+        changeVelocity(&sphere2, t);
+        changeVelocity(&sphere3, t);
 
-        movetocursor(&sphere1, x_cursor, y_cursor, t);
+        moveToCursor(&sphere1, x_cursor, y_cursor, t);
 
         colideSphereWall(&sphere1, windowX, windowY);
         colideSphereWall(&sphere2, windowX, windowY);
