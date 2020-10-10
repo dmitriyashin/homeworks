@@ -119,24 +119,6 @@ void collideTwoSphers(Sphere* sphere1, Sphere* sphere2, int t, int windowX, int 
     assert(dist);
 }
 
-void moveToCursor(Sphere* sphere, float x_cursor, float y_cursor, int t)
-{
-    if ((sphere->position.x == x_cursor) and (sphere->position.y == y_cursor))
-    {
-        sphere->velocity.x = 0;
-        sphere->velocity.y = 0;
-    }
-    else
-    {
-        float l = sqrt((y_cursor - sphere->position.y) * (y_cursor - sphere->position.y) + (x_cursor - sphere->position.x) * (x_cursor - sphere->position.x));
-        float sin = (y_cursor - sphere->position.y) / l;
-        float cos = (x_cursor - sphere->position.x) / l;
-        float v = (sqrt(sphere->velocity.x * sphere->velocity.x + sphere->velocity.y * sphere->velocity.y)) / t;
-        sphere->velocity.x = cos * v;
-        sphere->velocity.y = sin * v;
-    }
-}
-
 void changeVelocity(Sphere* sphere, int t)
 {
     sphere->velocity.x = sphere->velocity.x + sphere->acceleration.x * t;
