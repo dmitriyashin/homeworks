@@ -1,0 +1,253 @@
+#include <SFML/Graphics.hpp>
+#include <SFML/Window.hpp>
+#include <Cassert>
+#include "windows.h"
+
+struct Vector2f
+{
+    float x;
+    float y;
+
+    Vector2f()
+    {
+        x = 0;
+        y = 0;
+    }
+
+    Vector2f(float x, float y)
+    {
+        this->x = x;
+        this->y = y;
+    }
+
+    Vector2f operator+ (Vector2f v)
+    {
+        return Vector2f(x + v.x, y + v.y);
+    }
+
+    Vector2f operator- (Vector2f v)
+    {
+        return Vector2f(x - v.x, y - v.y);
+    }
+
+    Vector2f operator* (float n)
+    {
+        return Vector2f(n * x , n * y);
+    }
+
+    Vector2f operator/ (float n)
+    {
+        return Vector2f(x / n, y / n);
+    }
+    
+    float scalar(Vector2f v, Vector2f u)
+    {
+        return  u.x * v.x + u.y * v.y;
+    }
+
+    float lenght()
+    {
+        return sqrt(x * x + y * y);
+    }
+
+    Vector2f normalize()
+    {
+        float l = sqrt(x * x + y * y);
+        return Vector2f(x / l, y / l);
+    }
+
+    float angle( Vector2f u)
+    {
+        return((atan((u.x - x)/ (u.y - y))) * 180 / 3.14);
+    }
+
+};
+
+struct Sphere
+{
+public:
+
+    Vector2f position;
+    Vector2f velocity;
+    Vector2f acceleration;
+    int radius;
+    int red;
+    int green;
+    int blue;
+    int m;
+
+    Sphere()
+    {
+        position = { 0, 0 };
+        velocity = { 0, 0 };
+        acceleration = { 0, 0 };
+        radius = 0;
+        red = 0;
+        green = 0;
+        blue = 0;
+        m = 0;
+    }
+
+    Sphere(Vector2f position, Vector2f velocity, Vector2f acceleration, int radius, int red, int green, int blue, int m)
+    {
+        this->position = position;
+        this->velocity = velocity;
+        this->acceleration = acceleration;
+        this->radius = radius;
+        this->red = red;
+        this->green = green;
+        this->blue = blue;
+        this->m = m;
+    }
+    
+};
+
+struct Spring
+{
+    Vector2f position;
+    float angle;
+    float rate;
+    float lenght;
+    int red;
+    int green;
+    int blue;
+};
+
+void drawSphere(sf::RenderWindow* window, Sphere sphere)
+{
+    int numberofCircles = 100;
+    float x_centerofCircles = sphere.position.x;
+    float y_centerofCircles = sphere.position.y;
+    sf::CircleShape circle(0, 30);
+
+    for (int i = 0; i < numberofCircles; i++)
+    {
+        circle.setRadius(sphere.radius - i * sphere.radius / numberofCircles);
+        circle.setFillColor(sf::Color(i * sphere.red / numberofCircles, i * sphere.green / numberofCircles, i * sphere.blue / numberofCircles));
+        circle.setPosition(sphere.position.x + (sphere.position.x - x_centerofCircles) * i / numberofCircles  - sphere.radius + sphere.radius*i/ numberofCircles, sphere.position.y + (sphere.position.y - y_centerofCircles) * i / numberofCircles - sphere.radius + sphere.radius * i / numberofCircles);
+        window->draw(circle);
+    }
+}
+
+void drawSpring(sf::RenderWindow* window, Spring spring, float lenght)
+{
+        sf::RectangleShape rectangle;
+        rectangle.setSize(sf::Vector2f(5, lenght) );
+        rectangle.setFillColor(sf::Color(spring.red, spring.green, spring.blue));
+        rectangle.setPosition(spring.position.x, spring.position.y);
+        rectangle.setRotation(spring.angle);
+        window->draw(rectangle);
+}
+
+void moveSphere(Sphere* sphere, float t)
+{
+    sphere->position.x = sphere->position.x + sphere->velocity.x * t;
+    sphere->position.y = sphere->position.y + sphere->velocity.y * t;
+}
+
+void moveSpring(Spring* spring, Sphere sphere1, Sphere sphere2)
+{
+    spring->position = sphere1.position;
+    spring->angle = sphere1.position.angle(sphere2.position);
+}
+
+void changeVelocity(Sphere* sphere, float t)
+{
+    sphere->velocity.x = sphere->velocity.x + sphere->acceleration.x * t;
+    sphere->velocity.y = sphere->velocity.y + sphere->acceleration.y * t;
+}
+
+void acceleration(Sphere* sphere1, Sphere* sphere2, Spring spring)
+{
+    float force = -((sphere1->position - sphere2->position).lenght() - spring.lenght) * spring.rate;
+    sphere1->acceleration = sphere1->acceleration + ((sphere1->position - sphere2->position).normalize() * force / sphere1->m);
+    sphere2->acceleration = sphere2->acceleration + ((sphere2->position - sphere1->position).normalize() * force / sphere2->m);
+}
+
+void accelerationToZero(Sphere* sphere)
+{
+    sphere->acceleration = { 0, 0 };
+}
+
+int main()
+{
+    float t = 0.1;
+    int windowX = 1200;
+    int windowY = 800;
+    int n = 10;
+
+    
+
+    Sphere spheres[10];
+    for (int i = 0; i < 10; i++)
+        {
+        spheres[i] = {{ float(rand() % 500), float(rand() % 700)}, {0, 0},  {0, 0}, 10, 255, 0, 0, 100 };
+        }
+
+    Spring springs[10][10];
+    for (int i = 0; i < 10; i++)
+    {
+        for (int j = i + 1; j < 10; j++)
+        {
+            springs[i][j] = { spheres[i].position, spheres[i].position.angle( spheres[j].position), 20, (spheres[i].position - spheres[j].position).lenght() - 10, 255, 255, 0 };
+        }
+    }
+    for (int i = 0; i < 10; i++)
+    {
+        springs[i][i] = { spheres[i].position, 0 , 0, 0, 0, 0, 0 };
+    }
+    
+    sf::RenderWindow window(sf::VideoMode(windowX, windowY), "Window");
+   
+    
+    
+    while (window.isOpen())
+    {
+        sf::Event event;
+        while (window.pollEvent(event))
+        {
+            if (event.type == sf::Event::Closed)
+            {
+                window.close();
+            }
+        }
+
+        for (int i = 0; i < 10; i++)
+        {
+            accelerationToZero(&spheres[i]);
+        }
+
+        for (int i = 0; i < 10; i++)
+        {
+            for (int j = i + 1; j < 10; j++)
+            {
+                acceleration(&spheres[i], &spheres[j], springs[i][j]);
+            }
+        }
+
+        for (int i = 0; i < 10; i++)
+        {
+            changeVelocity(&spheres[i], t);
+            moveSphere(&spheres[i], t);
+            for (int j = i + 1; j < 10; j++)
+            {
+                moveSpring(&springs[i][j], spheres[i], spheres[j]);
+            }
+        }
+        
+        window.clear();
+        
+        for (int i = 0; i < 10; i++)
+        {
+            for (int j = i + 1; j < 10; j++)
+            {
+                drawSpring(&window, springs[i][j], (spheres[i].position - spheres[j].position).lenght());
+            }
+            drawSphere(&window, spheres[i]);
+        }
+        window.display();
+        //Sleep(1000);
+    }
+
+    return 0;
+}
