@@ -1,0 +1,64 @@
+#include <SFML/Graphics.hpp>
+#include <SFML/Window.hpp>
+#include <Cassert>
+#include "windows.h"
+#include "Vector.h"
+#include "Sphere.h"
+
+int main()
+{
+    float t = 1;
+    int windowX = 1200;
+    int windowY = 800;
+
+    Sphere particles[100];
+    for (int i = 0; i < 100; i++)
+    {
+        particles[i] = { {float((i + 1) * 25 % 1000), float((i + 1) * 25 / 10)}, {5, 5}, { 0, 0}, 10, 255, 255, 0, 1 };
+    }
+
+    sf::RenderWindow window(sf::VideoMode(windowX, windowY), "Window");
+
+    while (window.isOpen())
+    {
+        sf::Event event;
+        while (window.pollEvent(event))
+        {
+            if (event.type == sf::Event::Closed)
+            {
+                window.close();
+            }
+        }
+
+        for (int i = 0; i < 100; i++)
+        {
+            for (int j = i + 1; j < 100; j++)
+            {
+                if (particles[i].checkCollisionTwoSphers(particles[j]))
+                {
+                    particles[i].collideTwoSphers(&particles[j], t, windowX, windowY);
+                }
+            }
+        }
+
+        for (int i = 0; i < 100; i++)
+        {
+            particles[i].collideSphereWall(windowX, windowY, t);
+        }
+
+        for (int i = 0; i < 100; i++)
+        {
+            particles[i].moveSphere(t);
+        }
+
+        window.clear();
+        for (int i = 0; i < 100; i++)
+        {
+            assert((particles[i].position.x >= 0) and (particles[i].position.x <= windowX) and (particles[i].position.y >= 0) and (particles[i].position.y <= windowY));
+            particles[i].drawSphere(&window);
+        }
+        window.display();
+    }
+
+    return 0;
+}
