@@ -4,40 +4,7 @@
 #include "windows.h"
 #include "Vector.h"
 #include "Sphere.h"
-
-struct Spring
-{
-    Vector2f position;
-    float angle;
-    float rate;
-    float length;
-    int red;
-    int green;
-    int blue;
-};
-
-void drawSpring(sf::RenderWindow* window, Spring spring, float length)
-{
-        sf::RectangleShape rectangle;
-        rectangle.setSize(sf::Vector2f(length, 2) );
-        rectangle.setFillColor(sf::Color(spring.red, spring.green, spring.blue));
-        rectangle.setPosition(spring.position.x, spring.position.y);
-        rectangle.rotate(spring.angle);
-        window->draw(rectangle);
-}
-
-void moveSpring(Spring* spring, Sphere sphere1, Sphere sphere2)
-{
-    spring->position = sphere1.position;
-    if (sphere1.position.x < sphere2.position.x)
-    {
-        spring->angle = Vector2f(1, 0).angle(sphere2.position - sphere1.position);
-    }
-    else
-    {
-        spring->angle = 180 + Vector2f(1, 0).angle(sphere2.position - sphere1.position);
-    }
-}
+#include "Spring.h"
 
 void accelerationSpheres(Sphere* sphere1, Sphere* sphere2, Spring spring)
 {
@@ -61,7 +28,7 @@ int main()
     Sphere spheres[n];
     for (int i = 0; i < n; i++)
     {
-        spheres[i] = { { float(rand() % 650), float(rand() % 700)}, {0, 0},  {0, 0}, 10, 255, 0, 0, 10 * (i + 1)};
+        spheres[i] = { { float(rand() % 650), float(rand() % 700)}, {0, 0},  {0, 0}, 10, 255, 0, 0, 10 * (i + 1) };
     }
 
     Spring springs[n][n];
@@ -69,12 +36,12 @@ int main()
     {
         for (int j = i + 1; j < n; j++)
         {
-            springs[i][j] = { spheres[i].position, spheres[i].position.angle(spheres[j].position), float(5 * i + 2 * j) , (spheres[i].position - spheres[j].position).length() - 10, 255, 255, 0 };
+            springs[i][j] = { spheres[i].position, spheres[j].position, (spheres[i].position - spheres[j].position).length() - 10, float(5 * i + 2 * j) , 255, 255, 0 };
         }
     }
     for (int i = 0; i < n; i++)
     {
-        springs[i][i] = { spheres[i].position, 0 , 0, 0, 0, 0, 0 };
+        springs[i][i] = {spheres[i].position, spheres[i].position , 0, 0, 0, 0, 0 };
     }
 
     sf::RenderWindow window(sf::VideoMode(windowX, windowY), "Window");
@@ -109,7 +76,7 @@ int main()
             spheres[i].moveSphere(t);
             for (int j = i + 1; j < n; j++)
             {
-                moveSpring(&springs[i][j], spheres[i], spheres[j]);
+                springs[i][j].moveSpring(spheres[i], spheres[j]);
             }
         }
 
@@ -119,7 +86,7 @@ int main()
         {
             for (int j = i + 1; j < n; j++)
             {
-                drawSpring(&window, springs[i][j], (spheres[i].position - spheres[j].position).length());
+                springs[i][j].drawSpring(&window);
             }
             spheres[i].drawSphere(&window);
         }
