@@ -1,57 +1,30 @@
 struct Spring
 {
-    Vector2f position1;
-    Vector2f position2;
+    Sphere* sphere1;
+    Sphere* sphere2;
     float length;
     float rate;
     int red;
     int green;
     int blue;
 
-    Spring()
-    {
-        position1 = { 0, 0 };
-        position2 = { 0, 0 };
-        length = 10;
-        rate = 10;
-        red = 255;
-        green = 255;
-        blue = 0;
-    }
-
-    Spring(Vector2f position1, Vector2f position2,float length, float rate, int red, int green, int blue)
-    {
-        this->position1 = position1;
-        this->position2 = position2;
-        this->length = length;
-        this->rate = rate;
-        this->red = red;
-        this->green = green;
-        this->blue = blue;
-    }
-
-    void drawSpring(sf::RenderWindow* window)
+    void draw(sf::RenderWindow* window)
     {
         sf::RectangleShape rectangle;
-        rectangle.setSize(sf::Vector2f((position1 - position2).length(), 2));
+        rectangle.setSize(sf::Vector2f((sphere1->position - sphere2->position).length(), 2));
         rectangle.setFillColor(sf::Color(red, green, blue));
-        rectangle.setPosition(position1.x, position1.y);
+        rectangle.setPosition(sphere1->position.x, sphere1->position.y);
         float angle = 0;
-        if (position1.x < position2.x)
+        if (sphere1->position.x < sphere2->position.x)
         {
-            angle = Vector2f(1, 0).angle(position2 - position1);
+            angle = Vector2f(1, 0).angle(sphere2->position - sphere1->position);
         }
         else
         {
-            angle = 180 + Vector2f(1, 0).angle(position2 - position1);
+            angle = 180 + Vector2f(1, 0).angle(sphere2->position - sphere1->position);
         }
         rectangle.rotate(angle);
         window->draw(rectangle);
     }
-
-    void moveSpring(Sphere sphere1, Sphere sphere2)
-    {
-        position1 = sphere1.position;
-        position2 = sphere2.position;
-    }
 };
+
