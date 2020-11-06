@@ -36,12 +36,12 @@ int main()
     {
         for (int j = i + 1; j < n; j++)
         {
-            springs[i][j] = { spheres[i].position, spheres[j].position, (spheres[i].position - spheres[j].position).length() - 10, float(5 * i + 2 * j) , 255, 255, 0 };
+            springs[i][j] = { &spheres[i], &spheres[j], (spheres[i].position - spheres[j].position).length() - 10, float(5 * i + 2 * j) , 255, 255, 0 };
         }
     }
     for (int i = 0; i < n; i++)
     {
-        springs[i][i] = {spheres[i].position, spheres[i].position , 0, 0, 0, 0, 0 };
+        springs[i][i] = { &spheres[i], &spheres[i] , 0, 0, 0, 0, 0 };
     }
 
     sf::RenderWindow window(sf::VideoMode(windowX, windowY), "Window");
@@ -68,16 +68,9 @@ int main()
             {
                 accelerationSpheres(&spheres[i], &spheres[j], springs[i][j]);
             }
-        }
 
-        for (int i = 0; i < n; i++)
-        {
             spheres[i].changeVelocity(t);
-            spheres[i].moveSphere(t);
-            for (int j = i + 1; j < n; j++)
-            {
-                springs[i][j].moveSpring(spheres[i], spheres[j]);
-            }
+            spheres[i].move(t);
         }
 
         window.clear();
@@ -86,9 +79,9 @@ int main()
         {
             for (int j = i + 1; j < n; j++)
             {
-                springs[i][j].drawSpring(&window);
+                springs[i][j].draw(&window);
             }
-            spheres[i].drawSphere(&window);
+            spheres[i].draw(&window);
         }
         window.display();
         //Sleep(1000);
