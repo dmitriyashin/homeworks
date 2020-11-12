@@ -111,13 +111,13 @@ struct String
 
 	String* split(int index)
 	{
-		String strings[2];
+		String* strings = new String[2];
 		for (int i = 0; i < index; i++)
 		{
 			String s = string[i];
 			strings[0] += s;
 		}
-		String s = '\0';
+		String s('\0');
 		strings[0] += s;
 
 		for (int i = index; i < l + 1; i++)
