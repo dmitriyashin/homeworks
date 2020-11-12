@@ -1,0 +1,135 @@
+struct String
+{
+	char* string;
+	int l;
+	int cap;
+	
+	String()
+	{
+		this->l = 0;
+		this->cap = 0;
+		char c[] = "\0";
+		this->string = c ;
+	}
+
+	String(char c)
+	{
+		this->l = 2;
+		this->cap = 4;
+		this->string = new char[cap];
+		this->string[0] = c;
+		this->string[l] = '\0';
+	}
+
+	String(char* str)
+	{
+		
+		int i = 0;
+		while (str[i] != '\0')
+		{
+			i = i + 1;
+		}
+		this->l = i;
+		this->cap = i * 2;
+		this->string = new char[cap];
+		for (int i = 0; i < l; i++)
+		{
+			this->string[i] = str[i];
+		}
+		this->string[l] = '\0';
+
+	}
+
+	String(const String &str)
+	{
+		l = str.l;
+		cap = str.cap;
+		string = new char[cap];
+		for (int i = 0; i < l; i++)
+		{
+			string[i] = str.string[i];
+		}
+		string[l] = '\0';
+	}
+	
+	int length()
+	{
+		return l;
+	}
+
+	int countChar(char c)
+	{
+		int k = 0;
+		for (int i = 0; i < l; i++)
+		{
+			if (string[i] == c)
+			{
+				k = k + 1;
+			}
+		}
+		return k;
+	}
+
+	int findFirstOf(char c)
+	{
+		int i = 0;
+		while (string[i] != c)
+		{
+			i = i + 1;
+		}
+		return i;
+	}
+
+	char operator[](int index)
+	{
+		char s = string[index];
+		return s;
+	}
+
+	String operator+(String s)
+	{
+		int k = s.length();
+		
+		cap = (l + k) * 2;
+
+		char* str = new char[cap];
+		
+		for (int i = 0; i < l; i++)
+		{
+			str[i] = string[i];
+		}
+
+		for (int i = l; i < l + k + 1; i++)
+		{
+			str[i] = s[i - l];
+		}
+		String string(str);
+		string = str;
+		delete[] str;
+		return string;
+	}
+	
+	String* split(int index)
+	{
+		String strings[2];
+		for (int i = 0; i < index; i++)
+		{
+			String s = string[i];
+			strings[0] = strings[0] + s;
+		}
+		String s = '\0';
+		strings[0] = strings[0] + s;
+
+		for (int i = index; i < l + 1; i++)
+		{
+			String s = string[i];
+			strings[1] = strings[1] + s;
+		}
+		return strings;
+	}
+
+	~String()
+	{
+		delete[] string;
+	}
+};
