@@ -98,8 +98,8 @@ struct String
 			{
 				str[i] = string[i];
 			}
+			delete[] string;
 			string = str;
-			delete[] str;
 		}
 		
 		for (int i = l; i < l + k + 1; i++)
