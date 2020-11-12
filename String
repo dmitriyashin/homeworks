@@ -86,25 +86,27 @@ struct String
 		return s;
 	}
 
-	String operator+(String s)
+	void operator+=(String s)
 	{
 		int k = s.length();
-
-		cap = (l + k) * 2;
-
-		char* str = new char[cap];
-
-		for (int i = 0; i < l; i++)
+		
+		if (l + k >= cap)
 		{
-			str[i] = string[i];
+			cap = (l + k) * 2;
+			char* str = new char[cap];
+			for (int i = 0; i < l; i++)
+			{
+				str[i] = string[i];
+			}
+			string = str;
+			delete[] str;
 		}
-
+		
 		for (int i = l; i < l + k + 1; i++)
 		{
-			str[i] = s[i - l];
+			string[i] = s[i - l];
 		}
-		return String(str);
-		delete[] str;
+		l = l + k;
 	}
 
 	String* split(int index)
@@ -113,15 +115,15 @@ struct String
 		for (int i = 0; i < index; i++)
 		{
 			String s = string[i];
-			strings[0] = strings[0] + s;
+			strings[0] += s;
 		}
 		String s = '\0';
-		strings[0] = strings[0] + s;
+		strings[0] += s;
 
 		for (int i = index; i < l + 1; i++)
 		{
 			String s = string[i];
-			strings[1] = strings[1] + s;
+			strings[1] += s;
 		}
 		return strings;
 	}
