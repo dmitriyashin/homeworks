@@ -1,0 +1,86 @@
+#include <SFML/Graphics.hpp>
+#include <SFML/Window.hpp>
+#include <Cassert>
+#include "windows.h"
+#include "String.h"
+#include <cstdio>
+#include <iostream>
+#include <cstdlib>
+
+void change_s(int* i, int l, char* buffer, String* s)
+{
+    for (int j = 0; j < 4; j++)
+    {
+        if (*i < l - 1)
+        {
+            *i = *i + 1;
+        }
+        else
+        {
+            *i = 0;
+        }
+        *s += buffer[*i];
+    }
+}
+
+int main()
+{
+    int windowX = 1200;
+    int windowY = 800;
+ 
+#pragma warning(disable : 4996)
+    FILE* ptrFile = fopen("C:\\Users\\Дмитрий\\Documents\\qwer.txt", "rb");
+
+    fseek(ptrFile, 0, SEEK_END);
+    long lSize = ftell(ptrFile);
+    rewind(ptrFile); 
+
+    char* buffer = (char*)malloc(sizeof(char) * lSize); 
+
+    size_t result = fread(buffer, 1, lSize, ptrFile);
+
+    String b(buffer);
+    int l = b.length();
+
+    fclose(ptrFile);
+    
+    String s;
+
+    sf::Font font;
+	font.loadFromFile("C:\\Users\\Дмитрий\\Documents\\19924.ttf");
+	sf::Text text(s.string, font, 20);
+	text.setFillColor(sf::Color(0, 255, 0));
+    
+    sf::RenderWindow window(sf::VideoMode(windowX, windowY), "Window");
+    sf::View view;
+    view = window.getView();
+    int i = 0;
+
+    while (window.isOpen())
+    {
+        sf::Event event;
+        while (window.pollEvent(event))
+        {
+            if (event.type == sf::Event::Closed)
+            {
+                window.close();
+            }
+            else if (event.type == sf::Event::KeyPressed)
+            {
+                change_s(&i, l, buffer, &s);
+            }
+            if (event.type == sf::Event::MouseWheelScrolled)
+            {
+                view.move(0, -event.mouseWheelScroll.delta * 30);
+            }
+        }
+        text.setString(s.string);
+
+        window.clear();
+        window.setView(view);
+        window.draw(text);
+        window.display();
+    }
+	
+	return 0;
+}
