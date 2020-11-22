@@ -7,10 +7,11 @@
 #include <iostream>
 #include <cstdlib>
 
-void change_s(int* i, int l, char* buffer, String* s)
+void change_s(int* i, int l, char* buffer, String* s, int* quantityStrings)
 {
-    for (int j = 0; j < 4; j++)
+    for (int j = 0; j < 7; j++)
     {
+        *s += buffer[*i];
         if (*i < l - 1)
         {
             *i = *i + 1;
@@ -19,7 +20,12 @@ void change_s(int* i, int l, char* buffer, String* s)
         {
             *i = 0;
         }
-        *s += buffer[*i];
+        
+        if (buffer[*i] == '\n')
+        {
+            *quantityStrings = *quantityStrings + 1;
+            //std::cout << text.getScale() << std::endl;
+        }
     }
 }
 
@@ -29,35 +35,40 @@ int main()
     int windowY = 800;
  
 #pragma warning(disable : 4996)
-    FILE* ptrFile = fopen("C:\\Users\\Дмитрий\\Documents\\qwer.txt", "rb");
+    FILE* file = fopen("C:\\Users\\Дмитрий\\Documents\\qwer.txt", "rb");
 
-    fseek(ptrFile, 0, SEEK_END);
-    long lSize = ftell(ptrFile);
-    rewind(ptrFile); 
+    fseek(file, 0, SEEK_END);
+    long lSize = ftell(file);
+    rewind(file);
 
     char* buffer = (char*)malloc(sizeof(char) * lSize); 
 
-    size_t result = fread(buffer, 1, lSize, ptrFile);
+    size_t result = fread(buffer, 1, lSize, file);
 
-    String b(buffer);
-    int l = b.length();
+    String bufferString(buffer);
+    int lengthbuffer = bufferString.length();
 
-    fclose(ptrFile);
+    fclose(file);
     
-    String s;
+    String textInWindow;
 
     sf::Font font;
+    int sizeFont = 10;
 	font.loadFromFile("C:\\Users\\Дмитрий\\Documents\\19924.ttf");
-	sf::Text text(s.string, font, 20);
+	sf::Text text(textInWindow.string, font, sizeFont);
 	text.setFillColor(sf::Color(0, 255, 0));
+    text.setLineSpacing(2);
     
     sf::RenderWindow window(sf::VideoMode(windowX, windowY), "Window");
     sf::View view;
     view = window.getView();
-    int i = 0;
+    int numberSymbol = 0;
+    int quantityStrings = 0;
+    int quantityStrings2 = 0;
 
     while (window.isOpen())
     {
+        
         sf::Event event;
         while (window.pollEvent(event))
         {
@@ -67,14 +78,37 @@ int main()
             }
             else if (event.type == sf::Event::KeyPressed)
             {
-                change_s(&i, l, buffer, &s);
+                change_s(&numberSymbol, lengthbuffer, buffer, &textInWindow, &quantityStrings2);
+                
             }
             if (event.type == sf::Event::MouseWheelScrolled)
             {
                 view.move(0, -event.mouseWheelScroll.delta * 30);
             }
         }
-        text.setString(s.string);
+        text.setString(textInWindow.string);
+
+        if (quantityStrings > windowY / sizeFont)
+        {
+            if (quantityStrings2 > quantityStrings)
+            {
+                view.move(0, sizeFont);
+                
+            }
+        }
+        else
+        {
+            if (quantityStrings2 > windowY / sizeFont)
+            {
+                view.move(0, sizeFont);
+            }
+        }
+
+        quantityStrings = quantityStrings2;
+        sf::Vector2f a = text.getOrigin();
+        std::cout << a.x << std::endl;
+        std::cout << a.y << std::endl;
+        
 
         window.clear();
         window.setView(view);
