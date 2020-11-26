@@ -1,0 +1,152 @@
+struct qwer
+{
+	sf::Vector2f pos;
+	float radius;
+	int red;
+	int green; 
+	int blue;
+	bool play;
+
+	qwer(sf::Vector2f pos, float radius, int red, int green, int blue, bool play)
+	{
+		this->radius = radius;
+		this->pos = pos;
+		this->red = red;
+		this->green = green;
+		this->blue = blue;
+		this->play = play;
+	}
+
+	sf::Vector2f direction(sf::Vector2f posCursor)
+	{
+		float length = sqrt(pow((posCursor - pos).x, 2) + pow((posCursor - pos).y, 2));
+		sf::Vector2f dir(0, 0);
+		if (length != 0)
+		{
+			dir = (posCursor - pos) / length;
+		}
+		return dir;
+	}
+
+	float force(int t)
+	{
+		return (1000 - abs(t % 2000 - 1000)) / 10;
+	}
+
+	void draw(sf::RenderWindow* window)
+	{
+		sf::CircleShape circle(0, 30);
+		circle.setRadius(radius);
+		circle.setFillColor(sf::Color(red, green, blue));
+		circle.setPosition(pos - (sf::Vector2f(0.7, 0.7) * radius));
+		window->draw(circle);
+	}
+
+};
+
+void drawQwer(sf::RenderWindow* window, qwer Qwer, sf::Vector2f posBall, sf::Vector2f posCursor, int t)
+{
+	sf::Vector2f dir = Qwer.direction(posCursor);
+	
+	sf::Vector2f ort(dir.y, dir.x);
+	if (dir.y != 0)
+	{
+		sf::Vector2f ort(1, - dir.x / dir.y);
+		float length = sqrt(pow(ort.x, 2) + pow(ort.y, 2));
+		ort = ort / length;
+	}
+	
+	sf::Vector2f A = posBall + ort * float(3);
+	sf::Vector2f D = posBall - ort * float(3);
+	sf::Vector2f B = posBall + dir * float(100) + ort * float(3);
+	sf::Vector2f C = posBall + dir * float(100) - ort * float(3);
+	sf::Vector2f E = B + ort * float(3);
+	sf::Vector2f F = C - ort * float(3);
+	sf::Vector2f G = posBall + dir * float(120);
+	float force = Qwer.force(t);
+	sf::Vector2f B1 = posBall + dir * float(force) + ort * float(3);
+	sf::Vector2f C1 = posBall + dir * float(force) - ort * float(3);
+
+	sf::ConvexShape arrow1;
+	sf::ConvexShape arrow2;
+	sf::ConvexShape arrow3;
+	arrow1.setPointCount(4);
+	arrow2.setPointCount(3);
+	arrow3.setPointCount(4);
+	arrow1.setPoint(0, A);
+	arrow1.setPoint(1, B);
+	arrow1.setPoint(2, C);
+	arrow1.setPoint(3, D);
+
+	arrow2.setPoint(0, E);
+	arrow2.setPoint(1, G);
+	arrow2.setPoint(2, F);
+
+	arrow3.setPoint(0, A);
+	arrow3.setPoint(1, B1);
+	arrow3.setPoint(2, C1);
+	arrow3.setPoint(3, D);
+
+	arrow1.setFillColor(sf::Color(255, 255, 0));
+	arrow2.setFillColor(sf::Color(255, 255, 0));
+	arrow3.setFillColor(sf::Color(0, 0, 255));
+
+	sf::CircleShape circle(0, 30);
+	circle.setRadius(Qwer.radius);
+	circle.setFillColor(sf::Color(Qwer.red, Qwer.green, Qwer.blue));
+	circle.setPosition(Qwer.pos - (sf::Vector2f(0.7, 0.7) * Qwer.radius));
+	window->draw(circle);
+	window->draw(arrow1);
+	window->draw(arrow2);
+	window->draw(arrow3);
+};
+
+int main()
+{
+	sf::Vector2f curpos(0, 0);
+	int t = 0;
+	int dt = 1;
+	sf::RenderWindow window(sf::VideoMode(1280, 800), "Window");
+	qwer Qwer(sf::Vector2f(200, 300), 100, 255, 0, 0, false);
+	while (window.isOpen())
+	{
+		sf::Event event;
+		while (window.pollEvent(event))
+		{
+			if (event.type == sf::Event::Closed)
+			{
+				window.close();
+			}
+		}
+		if (event.type == sf::Event::MouseButtonPressed)
+		{
+			if (Qwer.play == true)
+			{
+				Qwer.play = false;
+			}
+			else
+			{
+				Qwer.play = true;
+			}
+		}
+
+		if (event.type == sf::Event::MouseMoved)
+		{
+			curpos = sf::Vector2f(event.mouseMove.x, event.mouseMove.y);
+		}
+
+		window.clear();
+		if (Qwer.play)
+		{
+			drawQwer(&window, Qwer, sf::Vector2f(600, 600), curpos, t);
+			t += dt;
+		}
+		else
+		{
+			Qwer.draw(&window);
+		};
+		window.display();
+	}
+
+	return 0;
+}
