@@ -7,25 +7,24 @@
 #include <iostream>
 #include <cstdlib>
 
-void change_s(int* i, int l, char* buffer, String* s, int* quantityStrings)
+void changeTextInWindow(String* textInWindow, int* numberSymbol, int lengthOfTextOriginal, char* textOriginal, int quantitySymbolInPress)
 {
-    for (int j = 0; j < 7; j++)
+    for (int j = 0; j < quantitySymbolInPress; j++)
     {
-        *s += buffer[*i];
-        if (*i < l - 1)
-        {
-            *i = *i + 1;
-        }
+        *textInWindow += textOriginal[*numberSymbol];
+        if (*numberSymbol < lengthOfTextOriginal - 1)
+            *numberSymbol++;
         else
-        {
-            *i = 0;
-        }
-        
-        if (buffer[*i] == '\n')
-        {
-            *quantityStrings = *quantityStrings + 1;
-            //std::cout << text.getScale() << std::endl;
-        }
+            *numberSymbol = 0;
+    }
+}
+
+int countStringsInWindow(int* quantityStringsInWindow, int numberSymbol, char* textOriginal, int quantitySymbolInPress)
+{
+    for (int j = numberSymbol; j < numberSymbol + quantitySymbolInPress; j++)
+    {
+        if (textOriginal[j] == '\n')
+            *quantityStringsInWindow++;
     }
 }
 
@@ -33,7 +32,8 @@ int main()
 {
     int windowX = 1200;
     int windowY = 800;
- 
+    int quantitySymbolInPress = 7;
+
 #pragma warning(disable : 4996)
     FILE* file = fopen("C:\\Users\\Дмитрий\\Documents\\qwer.txt", "rb");
 
@@ -41,7 +41,7 @@ int main()
     long lSize = ftell(file);
     rewind(file);
 
-    char* buffer = (char*)malloc(sizeof(char) * lSize); 
+    char* buffer = (char*)malloc(sizeof(char) * lSize);
 
     size_t result = fread(buffer, 1, lSize, file);
 
@@ -49,16 +49,15 @@ int main()
     int lengthbuffer = bufferString.length();
 
     fclose(file);
-    
+
     String textInWindow;
 
     sf::Font font;
-    int sizeFont = 10;
-	font.loadFromFile("C:\\Users\\Дмитрий\\Documents\\19924.ttf");
-	sf::Text text(textInWindow.string, font, sizeFont);
-	text.setFillColor(sf::Color(0, 255, 0));
-    text.setLineSpacing(2);
-    
+    int sizeFont = 15;
+    font.loadFromFile("C:\\Users\\Дмитрий\\Documents\\19924.ttf");
+    sf::Text text(textInWindow.string, font, sizeFont);
+    text.setFillColor(sf::Color(0, 255, 0));
+
     sf::RenderWindow window(sf::VideoMode(windowX, windowY), "Window");
     sf::View view;
     view = window.getView();
@@ -68,7 +67,7 @@ int main()
 
     while (window.isOpen())
     {
-        
+
         sf::Event event;
         while (window.pollEvent(event))
         {
@@ -76,10 +75,10 @@ int main()
             {
                 window.close();
             }
-            else if (event.type == sf::Event::KeyPressed)
+            if (event.type == sf::Event::KeyPressed)
             {
-                change_s(&numberSymbol, lengthbuffer, buffer, &textInWindow, &quantityStrings2);
-                
+                change(&numberSymbol, lengthbuffer, buffer, &textInWindow, &quantityStrings2);
+
             }
             if (event.type == sf::Event::MouseWheelScrolled)
             {
@@ -93,7 +92,7 @@ int main()
             if (quantityStrings2 > quantityStrings)
             {
                 view.move(0, sizeFont);
-                
+
             }
         }
         else
@@ -105,16 +104,13 @@ int main()
         }
 
         quantityStrings = quantityStrings2;
-        sf::Vector2f a = text.getOrigin();
-        std::cout << a.x << std::endl;
-        std::cout << a.y << std::endl;
-        
+
 
         window.clear();
         window.setView(view);
         window.draw(text);
         window.display();
     }
-	
-	return 0;
+
+    return 0;
 }
