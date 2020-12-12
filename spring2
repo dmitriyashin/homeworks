@@ -1,0 +1,84 @@
+void accelerationSpheres(Spring* spring)
+{
+    float force = -((spring->sphere1->position - spring->sphere2->position).length() - spring->length) * spring->rate;
+    spring->sphere1->acceleration = spring->sphere1->acceleration + ((spring->sphere1->position - spring->sphere2->position).normalize() * force / spring->sphere1->m);
+    spring->sphere2->acceleration = spring->sphere2->acceleration + ((spring->sphere2->position - spring->sphere1->position).normalize() * force / spring->sphere2->m);
+}
+
+void accelerationToZero(Sphere* sphere)
+{
+    sphere->acceleration = { 0, 0 };
+}
+
+int main()
+{
+    float t = 0.1;
+    int windowX = 1200;
+    int windowY = 800;
+    const int n = 10;
+    const int m = (n + 1) * (n - 2) / 2;
+
+    Sphere spheres[n];
+    for (int i = 0; i < n; i++)
+    {
+        spheres[i] = { { float(rand() % 650), float(rand() % 700)}, {0, 0},  {0, 0}, 10, 255, 0, 0, 10 * (i + 1) };
+    }
+
+    Spring springs[m];
+    int numberSpring = 0;
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = i + 1; j < n; j++)
+        {
+            springs[numberSpring] = { &spheres[i], &spheres[j], (spheres[i].position - spheres[j].position).length() - 10, float(5 * i + 2 * j) , 255, 255, 0 };
+            numberSpring++;
+        }
+    }
+
+    sf::RenderWindow window(sf::VideoMode(windowX, windowY), "Window");
+
+    while (window.isOpen())
+    {
+        sf::Event event;
+        while (window.pollEvent(event))
+        {
+            if (event.type == sf::Event::Closed)
+            {
+                window.close();
+            }
+        }
+
+        for (int i = 0; i < n; i++)
+        {
+            accelerationToZero(&spheres[i]);
+        }
+
+        for (int i = 0; i < m; i++)
+        {
+            accelerationSpheres(&springs[i]);    
+        }
+
+        for (int i = 0; i < n; i++)
+        {
+            spheres[i].changeVelocity(t);
+            spheres[i].move(t);
+        }
+
+        window.clear();
+
+        
+
+        for (int i = 0; i < m; i++)
+        {
+            springs[i].draw(&window);
+        }
+        for (int i = 0; i < n; i++)
+        {
+            spheres[i].draw(&window);
+        }
+        window.display();
+        //Sleep(1000);
+    }
+
+    return 0;
+}
