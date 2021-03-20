@@ -1,0 +1,47 @@
+#include <list>
+#include <vector>
+#include <fstream>
+#include <iostream>
+#include <string>
+#include <algorithm>
+
+int hash_function(std::string word)
+{
+	int result = 0;
+	for (int i = 0; i < word.length(); i++)
+	{
+		result = int((result + static_cast<int>(word[i])) / (i + 1));
+	}
+	return result;
+}
+
+const int table_size = 100;
+
+int main()
+{
+	std::vector<std::list < std::string>> hash_table(table_size);
+	std::string word;
+	
+	std::ifstream file("C:\\Users\\Дмитрий\\Documents\\hamlet.txt");
+
+	while (file)
+	{
+		file >> word;
+		int number_row = hash_function(word) % table_size;
+		hash_table[number_row].push_back(word);
+	}
+
+	file.close();
+	
+	for (int i = 0; i < table_size; i++)
+	{
+		hash_table[i].sort();
+		hash_table[i].unique();
+	}
+
+	for (int i = 0; i < table_size; i++)
+	{
+		std::cout<< hash_table[i].size() << std::endl;
+	}
+	return 0;
+}
